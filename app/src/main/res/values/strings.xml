@@ -1,0 +1,110 @@
+<resources>
+    <string name="app_name">ChatApplication</string>
+    <string name="welcome_back_folks">Welcome back Folks !!!</string>
+    <string name="lets_connect">Let\'s connect with friends\' of friends with Let\'s Chat......</string>
+    <string name="profile">Profile</string>
+    <string name="email_id">Email ID :</string>
+    <string name="user_id">User ID :</string>
+    <string name="add_contact">Add Contact</string>
+    <string name="notification">Notification</string>
+    <string name="friends">Friends</string>
+    <string name="log_out">Log Out</string>
+    <string name="type_your_message">Type your message</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="submit">Submit</string>
+    <string name="login">LOGIN</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="add_to_contact">Add to Contact</string>
+    <string name="email_address">Email Address :</string>
+    <string name="abc_gmail_com">abc@gmail.com</string>
+    <string name="send_request">Send Request</string>
+    <string name="cancel_request">Cancel Request</string>
+    <string name="contact">Contact List</string>
+    <string name="friend_profile">Friend Profile Details</string>
+    <string name="unfriend">Unfriend</string>
+    <string name="status">Status : </string>
+    <string name="connected">Connected</string>
+    <string name="account_status">Account Status : </string>
+    <string name="active">Active</string>
+    <string name="channel_name">Notification Channel</string>
+    <string name="channel_description">Used to send notification.</string>
+    <string name="friend_request">Friend Request</string>
+    <string name="block">Block</string>
+    <string name="go_chat">Chat</string>
+    <string name="about_application">About Application</string>
+    <string name="about_text">Hello Folks !!! \n\n
+    <b>\"How wonderful it is to be able to write someone a letter! To feel like conveying your thoughts to a person,
+        to sit at your desk and pick up a pen, to put your thoughts into words like this is truly marvelous.\"</b>\n― Haruki Murakami, Norwegian Wood\n\n
+Previously we used to write letters to our loved ones for anything small and eagerly waited to post our letters and to reach it to the destination. It was time
+    consuming. Nowadays we do not have that much time or patience to get our letters posted and reach it to the destination.\n
+    Now we are technologically sound to develop messaging service via digital media. We do not write letters in paper but write in android messaging application
+    and send it to the other person and it reaches to the destination end in a blink of eyes.\n\n
+    This application is a small approach of messaging service. Users need to register into this application via the email address.
+        By this application users can connect with other users via searching the email address in this platform. Users can start chatting with other users by
+        sending the friend request to others and on accepting the friend request both can chat. \n\n
+        This application provides functionalities like:\n
+        1. User can send request to any users by searching their email addresses in Add to Contact section\n
+        2. On accepting the friend request both the users can chat.\n
+        3. User can un-friend or block other person if any problem occurs.\n
+        4. Users will get notification on receiving friend request, message arrival.\n\n
+        Special Note : This application does not ask for banking details or any kind of OTP. Please beware of sharing the confidential information with other people\n\n\n
+        Copyright (c) 2020.\n
+  Owner  : SPCollaboration\n
+  Email address : spcollaboration2@gmail.com\n
+  Developer\'s name : Parita Dey and Souvik Datta\n
+  Idea makers : SPCollaboration\n
+  This project is developed by the team of SPCollaboration.\n
+    </string>
+    <string name="settings">Settings</string>
+    <string name="block_accounts">Block Accounts</string>
+    <string name="contact_us">Contact Us</string>
+    <string name="feedback">Feedback</string>
+    <string name="privacy">Privacy</string>
+    <string name="help">Help</string>
+    <string name="block_list">Block List</string>
+    <string name="do_you_want_to_un_block_this_person">Do you want to Un-block this person ?</string>
+    <string name="please_provide_your_feedback">Please provide your feedback</string>
+    <string name="your_feedback_is_important_to_us_for_a_better_improvement">Your feedback is important to us for improvement</string>
+    <string name="please_enter_your_message">Please enter your message</string>
+    <string name="dashboard_help">Dashboard Details</string>
+    <string name="profile_help">Profile section of LetsChat</string>
+    <string name="search_help">Search a person in Add Contact</string>
+    <string name="settings_help">Settings of LetsChat app</string>
+    <string name="contact_us_help">Contact with LetsChat Team</string>
+    <string name="feedback_help">Giving Feedback is easier</string>
+    <string name="verify_otp">Verify OTP</string>
+    <string name="enter_otp">Enter OTP</string>
+    <string name="verifyemail_text">Verify Email Address</string>
+    <string name="resend_otp">Resend OTP</string>
+    <string name="verify_mobile_text">OTP has been sent successfully.</string>
+    <string name="verify_email_address">souvikdatta900@gmail.com</string>
+    <string name="instruction_otp">(Please be patient and check your network, OTP may take time to come.)</string>
+    <string name="change_profile_photo">Change profile photo</string>
+    <string name="new_profile_photo">Choose Photo from Gallery</string>
+    <string name="remove_profile_photo">Remove Profile Photo</string>
+    <string name="click_new_image">Capture New Photo</string>
+    <string name="permission_rationale">Location permission is needed for live track functionality.</string>
+    <string name="ok">OK</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for live track functionality.</string>
+    <string name="location_updated">Location Updated: %1$s</string>
+    <string name="remove_location_updates">Remove location updates</string>
+    <string name="launch_activity">Launch activity</string>
+    <string name="title_activity_live_track">Map</string>
+    <string name="refer">Refer a friend</string>
+    <string name="invite">Invite</string>
+    <string name="referral">Referral</string>
+    <string name="lets_chat_with_your_friends">Lets Chat with your friends !!!!</string>
+    <string name="refer_text">Hello Folks !!! \n
+        This application needs to get popular so that each of your friend can use this awesome application.
+        Invite as many people as you want to add and chat in this platform and give feedback about the app in Feedback\n
+        section so that we the developers can work harder to fulfill all your demands. \n\nEnjoy Chatting with LetsChat.\n Thank you !!!"</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="notification_title">LetsChat</string>
+    <string name="notification_text">Please check your pending messages</string>
+    <string name="do_not_have_account_sign_up">Do not have account? Sign Up</string>
+    <string name="sign_up">SIGN UP</string>
+    <string name="confirm_password">Confirm Password</string>
+</resources>

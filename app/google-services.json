@@ -1,0 +1,64 @@
+{
+  "project_info": {
+    "project_number": "227413188717",
+    "firebase_url": "https://chatapplication-314710-default-rtdb.firebaseio.com",
+    "project_id": "chatapplication-314710",
+    "storage_bucket": "chatapplication-314710.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227413188717:android:8cdcc2907be6f523891f64",
+        "android_client_info": {
+          "package_name": "com.parita.chatapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "227413188717-7ketnjn9kai0q2q98bjrc4cf4l2vgn23.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.parita.chatapplication",
+            "certificate_hash": "045de8f6b3bdd0121eaf9f5c2f924f99d1e15b11"
+          }
+        },
+        {
+          "client_id": "227413188717-8a51adv0dubj0oug6ciepluuugaabr8j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.parita.chatapplication",
+            "certificate_hash": "c1ef6a9e5c19539db8f42f15e2f44c5743b42be5"
+          }
+        },
+        {
+          "client_id": "227413188717-bj3k24q88lci657asouf35p96vs3b97u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.parita.chatapplication",
+            "certificate_hash": "c60c52bd79f6dcf6eebe2388081f7a42f835a259"
+          }
+        },
+        {
+          "client_id": "227413188717-40hld4amqltnp3r8s6helaoak283hj1r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVaMe-h0KQpJwmNx8RyC8duoFBguS0Vog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "227413188717-40hld4amqltnp3r8s6helaoak283hj1r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
