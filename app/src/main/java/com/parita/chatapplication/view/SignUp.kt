@@ -39,20 +39,21 @@ class SignUp : Fragment() {
             if (viewModel.validateDetails(
                     binding.email.text.toString().trim(),
                     binding.password.text.toString().trim(),
-                    binding.cpassword.text.toString().trim(), binding)) {
+                    binding.cpassword.text.toString().trim(), binding
+                )
+            ) {
                 viewModel.initiateSignUp(
                     binding.email.text.toString().trim(),
                     binding.password.text.toString().trim()
                 )
+                clearFields()
+                hideSoftKeyboard()
                 viewModel.getSignupStatus().observe(viewLifecycleOwner, Observer {
                     if (!it) {
                         Log.d("TAG", "Account Successfully Created")
-                        clearFields()
-                        hideSoftKeyboard()
                         fragmentManager?.popBackStack()
                     } else {
                         Log.d("TAG", "Account Already Exists")
-                        clearFields()
                         Snackbar.make(
                             binding.root,
                             "Account already exists! Please verify account to login.",
@@ -74,7 +75,7 @@ class SignUp : Fragment() {
         binding.cpassword.text.clear()
     }
 
-    private fun hideSoftKeyboard() {
+    fun hideSoftKeyboard() {
         val imm =
             requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view?.windowToken, 0)

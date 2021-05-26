@@ -10,6 +10,7 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.parita.chatapplication.databinding.ActivitySignInBinding
 import com.parita.chatapplication.databinding.FragmentSignUpBinding
 import com.parita.chatapplication.repository.Repository
 
@@ -21,9 +22,9 @@ class MainViewModel : ViewModel() {
         return loginStatus
     }
 
-    fun getLoginStatus(email: String?) {
+    fun getLoginStatus(email: String, password: String, context: Context) {
         loginStatus = MutableLiveData()
-        loginStatus = Repository.fetchLoginStatus(email)
+        loginStatus = Repository.fetchLoginStatus(email, password, context)
     }
 
     @SuppressLint("MissingPermission")
@@ -65,6 +66,34 @@ class MainViewModel : ViewModel() {
         userAlreadyPresent = Repository.initateSignUp(email, password)
     }
 
+    fun validateLoginDetails(
+        email: String,
+        password: String,
+        binding: ActivitySignInBinding
+    ): Boolean {
+        if (!TextUtils.isEmpty(email) && !TextUtils.isEmpty(password)) {
+            if (isEmailValid(email) && isValidPassword(password)) {
+                return true
+            } else
+                if (!isEmailValid(email)) {
+                    binding.loginEmail.error = "Please enter a valid email address"
+                    return false
+                } else if (!isValidPassword(password)) {
+                    binding.loginPassword.error = "Please enter a valid password"
+                    return false
+                } else return false
+        } else {
+            if (TextUtils.isEmpty(email)) {
+                binding.loginEmail.error = "Please enter an email address. Field cannot be empty"
+                return false
+            } else if (TextUtils.isEmpty(password)) {
+                binding.loginPassword.error = "Please enter a password. Field cannot be empty"
+                return false
+            } else
+                return false
+        }
+    }
+
     fun validateDetails(
         email: String,
         password: String,
@@ -93,10 +122,10 @@ class MainViewModel : ViewModel() {
                 binding.email.error = "Please enter an email address. Field cannot be empty"
                 return false
             } else if (TextUtils.isEmpty(password)) {
-                binding.email.error = "Please enter a password. Field cannot be empty"
+                binding.password.error = "Please enter a password. Field cannot be empty"
                 return false
             } else if (TextUtils.isEmpty(cpassword)) {
-                binding.email.error =
+                binding.cpassword.error =
                     "Please enter a confirm matching password. Field cannot be empty"
                 return false
             } else

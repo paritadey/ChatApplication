@@ -2,6 +2,7 @@ package com.parita.chatapplication.view
 
 import android.Manifest
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
@@ -16,6 +17,8 @@ import androidx.fragment.app.FragmentTransaction
 import com.google.android.material.snackbar.Snackbar
 import com.parita.chatapplication.R
 import com.parita.chatapplication.databinding.ActivitySplashScreenBinding
+import com.parita.chatapplication.repository.Repository
+import com.parita.chatapplication.utils.SharedPreferenceHelper
 import com.parita.chatapplication.viewmodel.MainViewModel
 
 class SplashScreen : AppCompatActivity() {
@@ -24,9 +27,11 @@ class SplashScreen : AppCompatActivity() {
     private val REQUEST_CODE = 200
     private var flag: Boolean = true
     private lateinit var binding: ActivitySplashScreenBinding
+    private lateinit var defaultPrefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        defaultPrefs = SharedPreferenceHelper.defaultPreference(this)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_splash_screen)
         isOnInternet = viewModel.isNetworkAvailable(this)
         if (getRuntimePermissions()) {
@@ -89,9 +94,16 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun moveToLogin() {
-        Handler().postDelayed({
-            startActivity(Intent(this, SignIn::class.java))
-            finish()
-        }, 4000)
+        if (defaultPrefs.contains("email") && !defaultPrefs.getString("email", "no_data").equals("no_data")) {
+            Handler().postDelayed({
+                startActivity(Intent(this, MessageListActivity::class.java))
+                finish()
+            }, 4000)
+        } else {
+            Handler().postDelayed({
+                startActivity(Intent(this, SignIn::class.java))
+                finish()
+            }, 4000)
+        }
     }
 }
