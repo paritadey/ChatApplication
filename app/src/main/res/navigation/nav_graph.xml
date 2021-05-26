@@ -2,12 +2,175 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/nav_graph"
+    android:id="@+id/nav_graph.xml"
     app:startDestination="@id/messageListFragment">
-
     <fragment
         android:id="@+id/messageListFragment"
-        android:name="com.parita.chatapplication.view.MessageListFragment"
-        android:label="fragment_message_list"
-        tools:layout="@layout/fragment_message_list" />
+        android:name="com.parita.chatapplication.view.ui.MessageListFragment"
+        android:label="MessageListFragment">
+        <action
+            android:id="@+id/action_messageListFragment_to_profileFragment"
+            app:destination="@id/profileFragment"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+        <action
+            android:id="@+id/action_messageListFragment_to_addContactsFragment"
+            app:destination="@id/addContactsFragment"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+        <action
+            android:id="@+id/action_messageListFragment_to_notificationFragment"
+            app:destination="@id/notificationFragment"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+        <action
+            android:id="@+id/action_messageListFragment_to_friendsFragment"
+            app:destination="@id/friendsFragment"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.parita.chatapplication.view.ui.ProfileFragment"
+        android:label="ProfileFragment">
+        <action
+            android:id="@+id/action_profileFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_aboutAppFragment"
+            app:destination="@id/aboutAppFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addContactsFragment"
+        android:name="com.parita.chatapplication.view.ui.AddContactsFragment"
+        android:label="fragment_add_contacts"
+        tools:layout="@layout/fragment_add_contacts">
+        <action
+            android:id="@+id/action_addContactsFragment_to_contactDetailsFragment"
+            app:destination="@id/contactDetailsFragment"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+        <action
+            android:id="@+id/action_addContactsFragment_to_profileFragment"
+            app:destination="@id/profileFragment"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+        <action
+            android:id="@+id/action_addContactsFragment_to_sentAndReceivedConnectionRequest"
+            app:destination="@id/sentAndReceivedConnectionRequest"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+    </fragment>
+    <fragment
+        android:id="@+id/contactDetailsFragment"
+        android:name="com.parita.chatapplication.view.ui.ContactDetailsFragment"
+        android:label="fragment_contact_details"
+        tools:layout="@layout/fragment_contact_details" />
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.parita.chatapplication.view.ui.NotificationFragment"
+        android:label="fragment_notification"
+        tools:layout="@layout/fragment_notification" />
+    <fragment
+        android:id="@+id/friendsFragment"
+        android:name="com.parita.chatapplication.view.ui.FriendsFragment"
+        android:label="FriendsFragment">
+        <action
+            android:id="@+id/action_friendsFragment_to_friendDetailsFragment"
+            app:destination="@id/friendDetailsFragment"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+    </fragment>
+    <fragment
+        android:id="@+id/friendDetailsFragment"
+        android:name="com.parita.chatapplication.view.ui.FriendDetailsFragment"
+        android:label="fragment_friend_details"
+        tools:layout="@layout/fragment_friend_details">
+        <action
+            android:id="@+id/action_friendDetailsFragment_to_messageListFragment"
+            app:destination="@id/messageListFragment"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+        <action
+            android:id="@+id/action_friendDetailsFragment_to_chatActivity"
+            app:destination="@id/chatActivity"
+            app:enterAnim="@anim/fragment_close_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
+        <argument
+            android:name="reciept"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/sentAndReceivedConnectionRequest"
+        android:name="com.parita.chatapplication.view.ui.SentReceivedRequest"
+        android:label="fragment_sent_and_received_connection_request"
+        tools:layout="@layout/fragment_sent_received_request" />
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.parita.chatapplication.view.ui.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_settingsFragment_to_blockListFragment"
+            app:destination="@id/blockListFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_feedbackFragment"
+            app:destination="@id/feedbackFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_helpFragment"
+            app:destination="@id/helpFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_referFragment"
+            app:destination="@id/referFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/aboutAppFragment"
+        android:name="com.parita.chatapplication.view.ui.AboutAppFragment"
+        android:label="fragment_about_app"
+        tools:layout="@layout/fragment_about_app" />
+    <fragment
+        android:id="@+id/blockListFragment"
+        android:name="com.parita.chatapplication.view.ui.BlockListFragment"
+        android:label="fragment_block_list"
+        tools:layout="@layout/fragment_block_list" />
+    <activity
+        android:id="@+id/chatActivity"
+        android:name="com.parita.chatapplication.view.ChatActivity"
+        android:label="activity_chat"
+        tools:layout="@layout/activity_chat" />
+    <fragment
+        android:id="@+id/feedbackFragment"
+        android:name="com.parita.chatapplication.view.ui.FeedbackFragment"
+        android:label="fragment_feedback"
+        tools:layout="@layout/fragment_feedback" />
+    <fragment
+        android:id="@+id/helpFragment"
+        android:name="com.parita.chatapplication.view.ui.HelpFragment"
+        android:label="fragment_help"
+        tools:layout="@layout/fragment_help" />
+    <fragment
+        android:id="@+id/referFragment"
+        android:name="com.parita.chatapplication.view.ui.ReferFragment"
+        android:label="fragment_refer"
+        tools:layout="@layout/fragment_refer" />
 </navigation>

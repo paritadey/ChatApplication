@@ -20,6 +20,7 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
+
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
@@ -31,6 +32,7 @@
         android:roundIcon="@drawable/ic_letschat"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".view.ChatActivity"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

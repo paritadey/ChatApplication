@@ -27,6 +27,14 @@ class MainViewModel : ViewModel() {
         loginStatus = Repository.fetchLoginStatus(email, password, context)
     }
 
+    fun isOnline(context: Context): Boolean {
+        val conMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = conMgr.activeNetworkInfo
+        return if (netInfo == null || !netInfo.isConnected || !netInfo.isAvailable) {
+            false
+        } else true
+    }
+
     @SuppressLint("MissingPermission")
     fun isNetworkAvailable(context: Context): Boolean {
         if (context == null) return false
