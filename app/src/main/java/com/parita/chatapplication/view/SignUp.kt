@@ -1,5 +1,6 @@
 package com.parita.chatapplication.view
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
@@ -47,7 +48,7 @@ class SignUp : Fragment() {
                     binding.password.text.toString().trim()
                 )
                 clearFields()
-                hideSoftKeyboard()
+                hideSoftKeyboard(requireActivity())
                 viewModel.getSignupStatus().observe(viewLifecycleOwner, Observer {
                     if (!it) {
                         Log.d("TAG", "Account Successfully Created")
@@ -63,9 +64,16 @@ class SignUp : Fragment() {
                     }
                 })
             } else {
-                hideSoftKeyboard()
+                hideSoftKeyboard(requireActivity())
                 Log.d("TAG", "all validation messages are provided")
             }
+        }
+    }
+    fun hideSoftKeyboard(activity: Activity) {
+        val inputMethodManager: InputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if(inputMethodManager.isActive){
+            if(activity.currentFocus!=null)
+                inputMethodManager.hideSoftInputFromWindow(activity.currentFocus!!.windowToken, 0)
         }
     }
 
@@ -73,11 +81,5 @@ class SignUp : Fragment() {
         binding.email.text.clear()
         binding.password.text.clear()
         binding.cpassword.text.clear()
-    }
-
-    fun hideSoftKeyboard() {
-        val imm =
-            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(view?.windowToken, 0)
     }
 }

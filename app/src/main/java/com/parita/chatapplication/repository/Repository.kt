@@ -76,7 +76,7 @@ class Repository {
                         val map: MutableMap<String, Any> = HashMap()
                         map["email"] = email
                         map["password"] = password
-                        map["loginStatus"] = false
+                        map["loginStatus"] = true
                         map["accountStatus"] = true
                         map["userId"] = userId
                         updateUserList(email, true, false)

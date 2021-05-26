@@ -1,12 +1,16 @@
 package com.parita.chatapplication.view
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -106,4 +110,5 @@ class SplashScreen : AppCompatActivity() {
             }, 4000)
         }
     }
+
 }

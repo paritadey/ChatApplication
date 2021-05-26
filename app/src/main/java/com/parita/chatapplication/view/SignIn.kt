@@ -1,8 +1,11 @@
 package com.parita.chatapplication.view
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -40,7 +43,7 @@ class SignIn : AppCompatActivity() {
                     binding.loginPassword.text.toString().trim(), this
                 )
                 clearFields()
-                SignUp().hideSoftKeyboard()
+                hideSoftKeyboard(this)
                 viewModel.getLoginStatus().observe(this, Observer {
                     if (it) {
                         startActivity(Intent(this@SignIn, MessageListActivity::class.java))
@@ -62,6 +65,13 @@ class SignIn : AppCompatActivity() {
     private fun clearFields() {
         binding.loginEmail.text.clear()
         binding.loginPassword.text.clear()
+    }
+    fun hideSoftKeyboard(activity: Activity) {
+        val inputMethodManager: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if(inputMethodManager.isActive){
+            if(activity.currentFocus!=null)
+                inputMethodManager.hideSoftInputFromWindow(activity.currentFocus!!.windowToken, 0)
+        }
     }
 
 }
