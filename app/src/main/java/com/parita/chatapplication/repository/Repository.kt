@@ -7,8 +7,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
-import com.parita.chatapplication.model.Feedback
-import com.parita.chatapplication.model.User
+import com.parita.chatapplication.model.*
 import com.parita.chatapplication.utils.SharedPreferenceHelper
 import com.parita.chatapplication.utils.SharedPreferenceHelper.email
 import com.parita.chatapplication.utils.SharedPreferenceHelper.isLogin
@@ -33,6 +32,18 @@ class Repository {
         private lateinit var updateDeactivationStatus: MutableLiveData<Boolean>
         private lateinit var splashLoginStatus: MutableLiveData<Boolean>
         private lateinit var feedbackMutableLiveData: MutableLiveData<Boolean>
+        private lateinit var userList: ArrayList<User>
+        private lateinit var dataList: MutableLiveData<ArrayList<User>>
+        private lateinit var alreadyFriends: MutableLiveData<Boolean>
+        private lateinit var requestAlreadyReceived: MutableLiveData<Boolean>
+        private lateinit var requestFlag: MutableLiveData<String>
+        private lateinit var sendRequestFlag: MutableLiveData<String>
+        private lateinit var blockFlag: MutableLiveData<Boolean>
+        private lateinit var friendRequestData: MutableLiveData<Boolean>
+        private lateinit var unfriendFlag: MutableLiveData<Boolean>
+        private lateinit var updateRemoveStatus: MutableLiveData<Boolean>
+        private lateinit var blockList: ArrayList<Friends>
+        private lateinit var dataLists: MutableLiveData<ArrayList<Friends>>
 
 
         fun fetchLoginStatus(
@@ -137,6 +148,28 @@ class Repository {
             map["accountStatus"] = accountStatus
             databaseReference.updateChildren(map)
         }
+
+        private fun fetchSearchedUserFromDb(search: String) {
+            val databaseReference = FirebaseDatabase.getInstance().getReference("UserList")
+            databaseReference.orderByKey().limitToFirst(100)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    //TODO here we are trying to filter the data with respect to the key value and we are extracting first 100 records.
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        for (i in dataSnapshot.children) {
+                            Log.d("TAG", "add contact repository: " + i.key)
+                            if (i.key!!.contains(search)) {
+                                val user = i.getValue(User::class.java)
+                                userList.add(user!!)
+                            }
+                        }
+                        dataList.setValue(userList)
+                        userList.clear()
+                    }
+
+                    override fun onCancelled(databaseError: DatabaseError) {}
+                })
+        }
+
     }
 
     fun getLoginStatus(email: String): MutableLiveData<Boolean> {
@@ -487,5 +520,414 @@ class Repository {
         })
     }
 
+    fun getSearchedUserList(searchWord: String): MutableLiveData<ArrayList<User>> {
+        userList = ArrayList()
+        dataList = MutableLiveData()
+        fetchSearchedUserFromDb(searchWord)
+        return dataList
+    }
 
+    private fun fetchFriendList(userEmail: String, friendEmail: String) {
+        //TODO check for if a the user is already friends with the searched email, by looking into the
+        // friend node in the user we check if the entry exist, if it exist then we return true else false.
+        val path =
+            "Users/" + extactPathEmail(
+                userEmail
+            ) + "/Friends/" + extactPathEmail(
+                friendEmail
+            )
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    alreadyFriends.setValue(true)
+                } else {
+                    alreadyFriends.setValue(false)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun isAlreadyFriend(userEmail: String, friendEmail: String): MutableLiveData<Boolean> {
+        alreadyFriends = MutableLiveData()
+        fetchFriendList(userEmail, friendEmail)
+        return alreadyFriends
+    }
+
+    fun getRequestAlreadyReceived(
+        userEmail: String,
+        friendEmail: String
+    ): MutableLiveData<Boolean> {
+        requestAlreadyReceived = MutableLiveData()
+        fetchAlreadyReceivedRequest(userEmail, friendEmail)
+        return requestAlreadyReceived
+    }
+
+    private fun fetchAlreadyReceivedRequest(userEmail: String, friendEmail: String) {
+        //TODO check for if a the user is already received a friend request from the searched email, by looking into the
+        // FriendRequest/Received node in the user we check if the entry exist, if it exist then we return true else false.
+        val path =
+            "Users/" + extactPathEmail(
+                userEmail
+            ) + "/FriendRequest/Received/" + extactPathEmail(
+                friendEmail
+            )
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    requestAlreadyReceived.value = true
+                } else {
+                    requestAlreadyReceived.value = false
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun getFriendshipStatus(userEmail: String, friendEmail: String): MutableLiveData<String> {
+        requestFlag = MutableLiveData<String>()
+        fetchFriendStatus(userEmail, friendEmail)
+        return requestFlag
+    }
+
+    private fun fetchFriendStatus(userEmail: String, friendEmail: String) {
+        //TODO As because the text of the button need to be changed in regards to the value of the flag
+        // so here we find what is the status of the friend by reading the flag field in the inside friend node.
+        val path = "Users/" + extactPathEmail(userEmail)
+            .toString() + "/Friends/" + extactPathEmail(friendEmail)
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.hasChild("flag")) {
+                    requestFlag.setValue(dataSnapshot.child("flag").getValue(String::class.java))
+                } else {
+                    requestFlag.setValue("no_data")
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun loadRequestData(friendRequest: FriendRequest, email: String): MutableLiveData<String> {
+        sendRequestFlag = MutableLiveData()
+        loadData(friendRequest, email)
+        return sendRequestFlag
+    }
+
+    private fun loadData(friendRequest: FriendRequest, userEmail: String) {
+        //TODO this section will work when user search for a contact and go to contact details then this method loads whether Person A has sent friend request or not to Person B
+        // if Person A sends friend request then fetch the flag value from the db. If the flag=neutral then it will show request sent, if the flag= accepted then it will show Accepted
+        // and if the flag=rejected then it will show Send Request. If Person A has not sent any request to that particular email id of Person B then it will show no change
+        Log.d("TAG", "User Email : $userEmail")
+        val sentFriendEmail = userEmail.replace("@", "_").replace(".", "_") //TODO this is person A
+        Log.d("TAG", "sent friend email :$sentFriendEmail")
+        val sentRequestPath = "Users/$sentFriendEmail/FriendRequest"
+        val receiveEmail: String = friendRequest.email
+        val receiveRequestFriendEmail =
+            receiveEmail.replace("@", "_").replace(".", "_") //TODO this is person B
+        Log.d("TAG", "Receive friend email : $receiveRequestFriendEmail")
+        val sentRequestReference = FirebaseDatabase.getInstance().getReference(sentRequestPath)
+        sentRequestReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Log.d("TAG", "FriendRequest node exists")
+                    if (dataSnapshot.child("Sent").exists()) {
+                        Log.d("TAG", "FriendRequest/Sent node exists")
+                        for (i in dataSnapshot.children) {
+                            for (j in i.children) {
+                                if (j.key == receiveRequestFriendEmail) {
+                                    Log.d(
+                                        "TAG",
+                                        "friend request sent email is present: $receiveRequestFriendEmail"
+                                    )
+                                    for (k in j.children) {
+                                        if (k.key == "flag") {
+                                            Log.d("TAG", "Flag value: " + k.value)
+                                            val flag = k.value as String?
+                                            sendRequestFlag.value = flag
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Log.d("TAG", "No request has been sent : ")
+                    sendRequestFlag.value = "no_data"
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun initiateBlockUser(email: String, friendEmail: String): MutableLiveData<Boolean> {
+        blockFlag = MutableLiveData<Boolean>()
+        blockUser(email, friendEmail)
+        return blockFlag
+    }
+
+    private fun blockUser(userEmail: String, friendEmail: String) {
+        //TODO to block the user friend we go into the Friend node find the friend and set the flag value to block.
+
+        //TODO to block the user friend we go into the Friend node find the friend and set the flag value to block.
+        val path = "Users/" + extactPathEmail(userEmail)
+            .toString() + "/Friends/" + extactPathEmail(friendEmail)
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.hasChild("flag") && dataSnapshot.child("flag")
+                        .getValue(
+                            String::class.java
+                        ) == "friend"
+                ) {
+                    databaseReference.child("flag").setValue("block")
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                blockFlag.setValue(true)
+                            } else {
+                                blockFlag.setValue(false)
+                            }
+                        }
+                } else {
+                    blockFlag.setValue(false)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun initiateUnBlockUser(userEmail: String, friendEmail: String): MutableLiveData<Boolean> {
+        blockFlag = MutableLiveData()
+        unBlockUser(userEmail, friendEmail)
+        return blockFlag
+    }
+
+    private fun unBlockUser(userEmail: String, friendEmail: String) {
+        //TODO to unblock the user friend we go into the Friend node find the friend and check if the user has "block" in the flag,
+        // if block is found then we change the value of the flag to "friend".
+        val path =
+            "Users/" + extactPathEmail(userEmail) + "/Friends/" + extactPathEmail(friendEmail)
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.hasChild("flag") && dataSnapshot.child("flag")
+                        .getValue(
+                            String::class.java
+                        ) == "block"
+                ) {
+                    databaseReference.child("flag").setValue("friend")
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                blockFlag.setValue(false)
+                            } else {
+                                blockFlag.setValue(true)
+                            }
+                        }
+                } else {
+                    blockFlag.setValue(true)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun initiateFriendRequest(
+        friendRequest: FriendRequest,
+        userEmail: String
+    ): MutableLiveData<Boolean> {
+        friendRequestData = MutableLiveData()
+        sendRequest(friendRequest, userEmail)
+        return friendRequestData
+    }
+
+    private fun sendRequest(friendRequest: FriendRequest, userEmail: String) {
+        //TODO this will create a node called FriendRequest under the sender's email node and this
+        // FriendRequest has two sections, one is Sent and another is Received
+        //TODO if a person A sends a friend request to another person B then B will get the request as FriendRequest/Received
+        // and A will have the node structure like FriendRequest/Sent
+        Log.d("TAG", "User Email : $userEmail")
+        val sentFriendEmail = userEmail.replace("@", "_").replace(".", "_") //TODO this is person A
+        Log.d("TAG", "sent friend email :$sentFriendEmail")
+        val sentRequestPath = "Users/$sentFriendEmail/FriendRequest/Sent"
+        val receiveEmail: String = friendRequest.email
+        val receiveRequestFriendEmail =
+            receiveEmail.replace("@", "_").replace(".", "_") //TODO this is person B
+        Log.d("TAG", "Receive friend email : $receiveRequestFriendEmail")
+        val receiveRequestPath =
+            "Users/$receiveRequestFriendEmail/FriendRequest/Received"
+        val sendNotificationPath =
+            "Users/$receiveRequestFriendEmail/Notification" // TODO notification node will be created as soon as the Person A sends friend request to Person B
+        val sendRequestDataReference = FirebaseDatabase.getInstance().getReference(sentRequestPath)
+        val receiveRequestDataReference =
+            FirebaseDatabase.getInstance().getReference(receiveRequestPath)
+        val notificationDataReference =
+            FirebaseDatabase.getInstance().getReference(sendNotificationPath)
+        val notification = Notification()
+        notification.emailFrom = userEmail
+        notification.notificationMessage = "Pending Contact Request"
+        notification.dateTime =
+            friendRequest.date //TODO setting the date and time when Person A has sent friend Request to Person B
+        notification.notificationType =
+            3 //TODO if notificationType is 1 then it means message from another user, if notificationType is 2 then it means contact request acceptance, and if notificationType is 3 then it means contact request
+        notification.isSeenFlag =
+            false // TODO setting the seen flag : if the user has seen the notification then seenFlag = true and those will not be shown in app
+        notificationDataReference.child(sentFriendEmail)
+            .setValue(notification) //TODO this notification node will be deleted as soon as Person B views/gets notification from Person A
+        val data: MutableMap<String, Any> = HashMap()
+        data["email"] = userEmail
+        data["date"] = friendRequest.date
+        data["flag"] = friendRequest.flag
+        sendRequestDataReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                sendRequestDataReference.child(receiveRequestFriendEmail).setValue(friendRequest)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+        receiveRequestDataReference.child(sentFriendEmail)
+            .updateChildren(
+                data
+            ) { databaseError, databaseReference ->
+                if (databaseError == null) {
+                    updateStatus.setValue(true)
+                } else {
+                    updateStatus.setValue(false)
+                }
+            }
+    }
+
+    fun initiateUnfriendProcess(userEmail: String, friendEmail: String): MutableLiveData<Boolean> {
+        unfriendFlag = MutableLiveData()
+        removeFriend(userEmail, friendEmail)
+        return unfriendFlag
+    }
+
+    private fun removeFriend(userEmail: String, friendEmail: String) {
+        //TODO to implement unfriend operation we remove the entries from both the user account and the
+        // friend account from the friend node.
+        removeFriendNotification(userEmail, friendEmail)
+        val path = "Users/" + extactPathEmail(userEmail)
+            .toString() + "/Friends/" + extactPathEmail(friendEmail)
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.removeValue().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                unfriendFlag.setValue(true)
+            } else {
+                unfriendFlag.setValue(false)
+            }
+        }
+        val path1 =
+            "Users/" + extactPathEmail(friendEmail) + "/Friends/" + extactPathEmail(userEmail)
+        val databaseReference1 = FirebaseDatabase.getInstance().getReference(path1)
+        databaseReference1.removeValue().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                unfriendFlag.setValue(true)
+            } else {
+                unfriendFlag.setValue(false)
+            }
+        }
+    }
+
+    private fun removeFriendNotification(userEmail: String, friendEmail: String) {
+        //TODO This is just a safety check if the user is already unfriend then we remove all and every
+        // notification in both the accounts accordingly from the notification node.
+        val path =
+            "Users/" + extactPathEmail(userEmail) + "/Notification/" + extactPathEmail(friendEmail)
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.removeValue().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+            } else {
+            }
+        }
+        val path1 = "Users/" + extactPathEmail(friendEmail)
+            .toString() + "/Notification/" + extactPathEmail(userEmail)
+        val databaseReference1 = FirebaseDatabase.getInstance().getReference(path1)
+        databaseReference1.removeValue().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+            } else {
+            }
+        }
+    }
+
+    fun removeFriendRequest(
+        friendRequest: FriendRequest,
+        userEmail: String
+    ): MutableLiveData<Boolean> {
+        updateRemoveStatus = MutableLiveData()
+        removeRequest(friendRequest, userEmail)
+        return updateRemoveStatus
+    }
+
+    private fun removeRequest(friendRequest: FriendRequest, userEmail: String) {
+        //TODO remove the friend request i.e if Person A sends request to Person B and Person A wants to undo the friends request
+        //TODO case 1 : this section will only cancel the friend request if Person B has not accepted the friend request, i.e flag = neutral
+        //TODO case 2 : if Person B accepts the friend request of Person A and then Person A searches for the name of Person B, then on acceptance of friend request,
+        // Person A will see three option :
+        // option 1 : Send Request button will converted to  Accepted Request
+        // option 2 : Cancel Request button will not be shown
+        // option 3 : Go to chat button will be visible, so that Person A can redirect to the Chat of B and A
+        // TODO case 3 : if Person B rejects the friend request of Person A, then Person A will see two options: option a -> Send Request and option b -> Cancel Request
+        Log.d("TAG", "User Email : $userEmail")
+        val sentFriendEmail = userEmail.replace("@", "_").replace(".", "_") //TODO this is person A
+        Log.d("TAG", "sent friend email :$sentFriendEmail")
+        val cancelSentRequestPath = "Users/$sentFriendEmail/FriendRequest/Sent"
+        val receiveEmail: String = friendRequest.email
+        val receiveRequestFriendEmail =
+            receiveEmail.replace("@", "_").replace(".", "_") //TODO this is person B
+        Log.d("TAG", "Receive friend email : $receiveRequestFriendEmail")
+        val cancelReceiveRequestPath =
+            "Users/$receiveRequestFriendEmail/FriendRequest/Received"
+        val cancelSendNotificationPath =
+            "Users/$receiveRequestFriendEmail/Notification" // TODO notification node will be created as soon as the Person A sends friend request to Person B
+        val cancelSendRequestDataReference =
+            FirebaseDatabase.getInstance().getReference(cancelSentRequestPath)
+        val cancelReceiveRequestDataReference =
+            FirebaseDatabase.getInstance().getReference(cancelReceiveRequestPath)
+        val cancelNotificationDataReference =
+            FirebaseDatabase.getInstance().getReference(cancelSendNotificationPath)
+        //TODO removing all the nodes on cancelling the request only if Person A and Person B are not friends
+        cancelSendRequestDataReference.child(receiveRequestFriendEmail).removeValue()
+        cancelReceiveRequestDataReference.child(sentFriendEmail).removeValue()
+        cancelNotificationDataReference.child(sentFriendEmail).removeValue()
+        updateRemoveStatus.setValue(true)
+    }
+
+    fun getBlockedFriendList(email: String): MutableLiveData<ArrayList<Friends>> {
+        blockList = ArrayList<Friends>()
+        dataLists = MutableLiveData<ArrayList<Friends>>()
+        fetchBlockFriendsFromDb(email)
+        return dataLists
+    }
+
+    private fun fetchBlockFriendsFromDb(userEmail: String) {
+        //TODO fetch block friend list by fetching the flag=block from database
+        val friendsPath =
+            "Users/" + extactPathEmail(userEmail) + "/Friends"
+        val fetchBlockFriendReference = FirebaseDatabase.getInstance().getReference(friendsPath)
+        fetchBlockFriendReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (i in dataSnapshot.children) {
+                    if (i.child("flag").exists()) {
+                        if (i.child("flag").value.toString().equals("block", ignoreCase = true)) {
+                            val key = i.key
+                            var obj: Friends? = Friends()
+                            obj = dataSnapshot.child(key!!).getValue(Friends::class.java)
+                            blockList.add(obj!!)
+                        }
+                    }
+                }
+                dataLists.value = blockList
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
 }

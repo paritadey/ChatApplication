@@ -14,8 +14,11 @@ import androidx.lifecycle.ViewModel
 import com.parita.chatapplication.databinding.ActivitySignInBinding
 import com.parita.chatapplication.databinding.FragmentSignUpBinding
 import com.parita.chatapplication.model.Feedback
+import com.parita.chatapplication.model.FriendRequest
+import com.parita.chatapplication.model.Friends
 import com.parita.chatapplication.model.User
 import com.parita.chatapplication.repository.Repository
+import java.util.*
 
 class MainViewModel : ViewModel() {
     private lateinit var loginStatus: MutableLiveData<Boolean>
@@ -30,6 +33,17 @@ class MainViewModel : ViewModel() {
     private lateinit var isAccountDeactivated: MutableLiveData<Boolean>
     private lateinit var splashLoginStatus: MutableLiveData<Boolean>
     private lateinit var feedbackMutableLiveData: MutableLiveData<Boolean>
+    private lateinit var dataList: MutableLiveData<ArrayList<User>>
+    private lateinit var alreadyFriend: MutableLiveData<Boolean>
+    private lateinit var requestAlreadyReceived: MutableLiveData<Boolean>
+    private lateinit var requestFlag: MutableLiveData<String>
+    private lateinit var sendRequestFlag:MutableLiveData<String>
+    private lateinit var blockFlag: MutableLiveData<Boolean>
+    private lateinit var friendRequestData:MutableLiveData<Boolean>
+    private lateinit var unfriendFlag: MutableLiveData<Boolean>
+    private lateinit var removeData: MutableLiveData<Boolean>
+    private lateinit var dataLists: MutableLiveData<ArrayList<Friends>>
+    private lateinit var blockFlags: MutableLiveData<Boolean>
 
 
     fun getLoginStatus(): LiveData<Boolean> {
@@ -257,4 +271,100 @@ class MainViewModel : ViewModel() {
     fun getSplashLoginStatus(): LiveData<Boolean> {
         return splashLoginStatus
     }
+
+    fun initiateSearch(search: String) {
+        dataList = MutableLiveData<ArrayList<User>>()
+        if (search != "") dataList = Repository().getSearchedUserList(search)
+    }
+
+    fun initiateFriendSearch(userEmail: String, friendEmail: String) {
+        alreadyFriend = MutableLiveData<Boolean>()
+        alreadyFriend = Repository().isAlreadyFriend(userEmail, friendEmail)
+    }
+
+    fun checkForAlreadyRequestReceived(userEmail: String, friendEmail: String) {
+        requestAlreadyReceived = MutableLiveData<Boolean>()
+        requestAlreadyReceived =
+            Repository().getRequestAlreadyReceived(userEmail, friendEmail)
+    }
+    fun getSearchList(): LiveData<ArrayList<User>> {
+        return dataList
+    }
+
+    fun getAlreadyFriend(): LiveData<Boolean> {
+        return alreadyFriend
+    }
+
+    fun getAlreadyRequestReceived(): LiveData<Boolean> {
+        return requestAlreadyReceived
+    }
+    fun getFriendshipStatus(userEmail: String, friendEmail: String) {
+        requestFlag = MutableLiveData<String>()
+        requestFlag =
+            Repository().getFriendshipStatus(userEmail, friendEmail)
+    }
+    fun getUpdateRequest(): LiveData<String> {
+        return requestFlag
+    }
+
+    fun requestFlagMethod(friendRequest: FriendRequest, email: String) {
+        sendRequestFlag = MutableLiveData()
+        sendRequestFlag = Repository().loadRequestData(friendRequest, email)
+    }
+    fun getUpdateRequestMethod(): LiveData<String> {
+        return sendRequestFlag
+    }
+
+    fun initiateBlockUser(email: String, friendEmail: String) {
+        blockFlag = MutableLiveData<Boolean>()
+        blockFlag = Repository().initiateBlockUser(email, friendEmail)
+    }
+    fun userIsBlocked(): LiveData<Boolean> {
+        return blockFlag
+    }
+
+    fun initiateUnBlockUser(userEmail: String, friendEmail: String) {
+        blockFlag = MutableLiveData()
+        blockFlag = Repository().initiateUnBlockUser(userEmail, friendEmail)
+    }
+    fun getUpdateCompleteSendRequest(): LiveData<Boolean> {
+        return friendRequestData
+    }
+    fun insertFriendRequest(friendRequest: FriendRequest, userEmail: String) {
+        friendRequestData =
+            Repository().initiateFriendRequest(friendRequest, userEmail)
+
+    }
+    fun userIsUnfriended(): LiveData<Boolean>{
+        return unfriendFlag
+    }
+    fun initateUnfriendProcess(userEmail: String, friendEmail: String) {
+        unfriendFlag = MutableLiveData<Boolean>()
+        unfriendFlag =
+            Repository().initiateUnfriendProcess(userEmail, friendEmail)
+    }
+    fun getUpdateCompleteCancelRequest(): LiveData<Boolean> {
+        return removeData
+    }
+    fun removeFriendRequest(friendRequest: FriendRequest, userEmail: String) {
+        removeData = MutableLiveData()
+        removeData = Repository().removeFriendRequest(friendRequest, userEmail)
+    }
+
+    fun initiateBlockList(email: String) {
+        dataLists = MutableLiveData<ArrayList<Friends>>()
+        dataLists = Repository().getBlockedFriendList(email)
+    }
+    fun getBlockedFriendDataList(): LiveData<ArrayList<Friends>> {
+        return dataLists
+    }
+    fun userIsblocked(): LiveData<Boolean> {
+        return blockFlags
+    }
+
+    fun initiateUnblock(userEmail: String, friendEmail: String) {
+        blockFlags = MutableLiveData()
+        blockFlags = Repository().initiateUnBlockUser(userEmail, friendEmail)
+    }
+
 }
