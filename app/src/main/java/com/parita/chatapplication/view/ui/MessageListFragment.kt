@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.parita.chatapplication.R
 import com.parita.chatapplication.databinding.FragmentMessageListBinding
 import com.parita.chatapplication.utils.SharedPreferenceHelper
@@ -27,9 +28,11 @@ class MessageListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_message_list, container, false)
+        binding =
+            DataBindingUtil.inflate(inflater, R.layout.fragment_message_list, container, false)
         return binding.root
     }
+
     override fun onResume() {
         super.onResume()
         if (viewModel.isOnline(requireContext())) {
@@ -49,7 +52,28 @@ class MessageListFragment : Fragment() {
     }
 
     private fun initView() {
-
+        binding.profile.setOnClickListener {
+            findNavController().navigate(R.id.action_messageListFragment_to_profileFragment)
+        }
+        binding.friends.setOnClickListener {
+            findNavController().navigate(R.id.action_messageListFragment_to_friendsFragment)
+        }
+        binding.addFriend.setOnClickListener {
+            findNavController().navigate(R.id.action_messageListFragment_to_addContactsFragment)
+        }
+        binding.notification.setOnClickListener {
+            findNavController().navigate(R.id.action_messageListFragment_to_notificationFragment)
+        }
+        binding.sync.setOnClickListener {
+            if (viewModel.isOnline(requireContext())) {
+                // loadMessageList()
+            } else {
+                MessageListActivity().createToast(
+                    context,
+                    "No internet connection. Please connect with the internet"
+                )
+            }
+        }
     }
 
 }
