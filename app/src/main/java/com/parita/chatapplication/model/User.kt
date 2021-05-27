@@ -1,4 +1,4 @@
-package com.parita.chatapplication
+package com.parita.chatapplication.model
 
 class User {
     var name: String

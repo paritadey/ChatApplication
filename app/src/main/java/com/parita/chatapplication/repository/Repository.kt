@@ -5,12 +5,10 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
-import com.parita.chatapplication.User
+import com.parita.chatapplication.model.Feedback
+import com.parita.chatapplication.model.User
 import com.parita.chatapplication.utils.SharedPreferenceHelper
 import com.parita.chatapplication.utils.SharedPreferenceHelper.email
 import com.parita.chatapplication.utils.SharedPreferenceHelper.isLogin
@@ -34,6 +32,7 @@ class Repository {
         private lateinit var updateStatus: MutableLiveData<Boolean>
         private lateinit var updateDeactivationStatus: MutableLiveData<Boolean>
         private lateinit var splashLoginStatus: MutableLiveData<Boolean>
+        private lateinit var feedbackMutableLiveData: MutableLiveData<Boolean>
 
 
         fun fetchLoginStatus(
@@ -56,8 +55,12 @@ class Repository {
                             "accountStatus"
                         )
                     ) {
-                        if (password.equals(dataSnapshot.child("password").getValue(String::class.java))) {
-                            val loginStatusDB = dataSnapshot.child("loginStatus").getValue(Boolean::class.java)!!
+                        if (password.equals(
+                                dataSnapshot.child("password").getValue(String::class.java)
+                            )
+                        ) {
+                            val loginStatusDB =
+                                dataSnapshot.child("loginStatus").getValue(Boolean::class.java)!!
                             if (loginStatusDB == false) {
                                 loginStatus.value = true
                                 val accountStatus = dataSnapshot.child("accountStatus")
@@ -163,6 +166,35 @@ class Repository {
                 } else {
                     splashLoginStatus.setValue(false)
                 }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun initiateFeedback(feedback: Feedback): MutableLiveData<Boolean> {
+        feedbackMutableLiveData = MutableLiveData()
+        uploadFeedback(feedback)
+        return feedbackMutableLiveData
+    }
+
+    private fun uploadFeedback(feedback: Feedback) {
+        val feedbackReference = FirebaseDatabase.getInstance().getReference("FeedBack")
+        val data: MutableMap<String, Any> = HashMap()
+        data["email"] = feedback.email
+        data["ratings"] = feedback.ratings
+        data["message"] = feedback.message
+        data["dateTime"] = feedback.dateTime
+        feedbackReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                feedbackReference.child("Feedback_" + dataSnapshot.childrenCount.toString())
+                    .updateChildren(data).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            updateStatus.value = true
+                        } else {
+                            updateStatus.value = false
+                        }
+                    }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {}
@@ -454,5 +486,6 @@ class Repository {
             override fun onCancelled(databaseError: DatabaseError) {}
         })
     }
+
 
 }

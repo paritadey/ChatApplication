@@ -11,9 +11,10 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.parita.chatapplication.User
 import com.parita.chatapplication.databinding.ActivitySignInBinding
 import com.parita.chatapplication.databinding.FragmentSignUpBinding
+import com.parita.chatapplication.model.Feedback
+import com.parita.chatapplication.model.User
 import com.parita.chatapplication.repository.Repository
 
 class MainViewModel : ViewModel() {
@@ -28,6 +29,7 @@ class MainViewModel : ViewModel() {
     private lateinit var data: MutableLiveData<Boolean>
     private lateinit var isAccountDeactivated: MutableLiveData<Boolean>
     private lateinit var splashLoginStatus: MutableLiveData<Boolean>
+    private lateinit var feedbackMutableLiveData: MutableLiveData<Boolean>
 
 
     fun getLoginStatus(): LiveData<Boolean> {
@@ -46,7 +48,14 @@ class MainViewModel : ViewModel() {
             false
         } else true
     }
+    fun getFeedbackCompleted(): LiveData<Boolean> {
+        return feedbackMutableLiveData
+    }
 
+    fun initiateUploadFeedback(feedback: Feedback) {
+        feedbackMutableLiveData = MutableLiveData()
+        feedbackMutableLiveData = Repository().initiateFeedback(feedback)
+    }
     @SuppressLint("MissingPermission")
     fun isNetworkAvailable(context: Context): Boolean {
         if (context == null) return false
