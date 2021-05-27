@@ -45,13 +45,13 @@ class MessageListActivity : AppCompatActivity() {
 
     }
 
-    fun createToast(context: Context?, message: String?) {
+    fun createToast(context: Context, message: String) {
         val toast = Toast.makeText(context, message, Toast.LENGTH_LONG)
         val view = toast.view
-        view!!.setBackgroundResource(R.drawable.tags_rounded_corners)
-        view.setPadding(16, 16, 16, 16)
-        val text = view.findViewById<View>(android.R.id.message) as TextView
-        text.setTextColor(ContextCompat.getColor(context!!, R.color.black))
+        view?.setBackgroundResource(R.drawable.tags_rounded_corners)
+        view?.setPadding(16, 16, 16, 16)
+        val text = view?.findViewById<View>(android.R.id.message) as TextView
+        text.setTextColor(ContextCompat.getColor(context, R.color.black))
         toast.show()
     }
 

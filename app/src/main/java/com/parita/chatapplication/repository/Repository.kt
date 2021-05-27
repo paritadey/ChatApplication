@@ -5,13 +5,17 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.parita.chatapplication.User
 import com.parita.chatapplication.utils.SharedPreferenceHelper
 import com.parita.chatapplication.utils.SharedPreferenceHelper.email
 import com.parita.chatapplication.utils.SharedPreferenceHelper.isLogin
 import com.parita.chatapplication.utils.SharedPreferenceHelper.password
+import java.text.SimpleDateFormat
 import java.util.*
 
 class Repository {
@@ -26,6 +30,10 @@ class Repository {
         private lateinit var removeImage: MutableLiveData<Boolean>
         private lateinit var userImagePath: MutableLiveData<String>
         private lateinit var uploadImage: MutableLiveData<Boolean>
+        private lateinit var noPreviousImgImageUploaded: MutableLiveData<Boolean>
+        private lateinit var updateStatus: MutableLiveData<Boolean>
+        private lateinit var updateDeactivationStatus: MutableLiveData<Boolean>
+        private lateinit var splashLoginStatus: MutableLiveData<Boolean>
 
 
         fun fetchLoginStatus(
@@ -48,20 +56,25 @@ class Repository {
                             "accountStatus"
                         )
                     ) {
-                        if (password.equals(
-                                dataSnapshot.child("password").getValue(String::class.java)
-                            )
-                        ) {
-                            loginStatus.value =
-                                dataSnapshot.child("loginStatus").getValue(Boolean::class.java)
-                            val loginStatus =
-                                dataSnapshot.child("loginStatus").getValue(Boolean::class.java)!!
-                            val accountStatus =
-                                dataSnapshot.child("accountStatus").getValue(Boolean::class.java)!!
-                            defaultPrefs.email = email
-                            defaultPrefs.password = password
-                            defaultPrefs.isLogin = true
-                            updateUserList(email, accountStatus, loginStatus)
+                        if (password.equals(dataSnapshot.child("password").getValue(String::class.java))) {
+                            val loginStatusDB = dataSnapshot.child("loginStatus").getValue(Boolean::class.java)!!
+                            if (loginStatusDB == false) {
+                                loginStatus.value = true
+                                val accountStatus = dataSnapshot.child("accountStatus")
+                                    .getValue(Boolean::class.java)!!
+                                defaultPrefs.email = email
+                                defaultPrefs.password = password
+                                defaultPrefs.isLogin = true
+                                updateUserList(email, accountStatus, true)
+                            } else {
+                                loginStatus.value = false
+                                val accountStatus = dataSnapshot.child("accountStatus")
+                                    .getValue(Boolean::class.java)!!
+                                defaultPrefs.email = email
+                                defaultPrefs.password = password
+                                defaultPrefs.isLogin = true
+                                updateUserList(email, accountStatus, false)
+                            }
                         } else {
                             loginStatus.value = false
                         }
@@ -121,6 +134,39 @@ class Repository {
             map["accountStatus"] = accountStatus
             databaseReference.updateChildren(map)
         }
+    }
+
+    fun getLoginStatus(email: String): MutableLiveData<Boolean> {
+        splashLoginStatus = MutableLiveData()
+        fetchSplashLoginStatus(email)
+        return splashLoginStatus
+    }
+
+    private fun fetchSplashLoginStatus(email: String) {
+        val databaseReference = FirebaseDatabase.getInstance()
+            .getReference("Users/" + email.replace("@", "_").replace(".", "_"))
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.hasChild("loginStatus") && dataSnapshot.hasChild(
+                        "accountStatus"
+                    )
+                ) {
+                    splashLoginStatus.value =
+                        dataSnapshot.child("loginStatus").getValue(Boolean::class.java)
+                    val loginStatus = dataSnapshot.child("loginStatus").getValue(
+                        Boolean::class.java
+                    )!!
+                    val accountStatus = dataSnapshot.child("accountStatus").getValue(
+                        Boolean::class.java
+                    )!!
+                    updateUserList(email, accountStatus, loginStatus)
+                } else {
+                    splashLoginStatus.setValue(false)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
     }
 
     fun getUserProfileData(context: Context): MutableLiveData<User> {
@@ -239,15 +285,47 @@ class Repository {
         })
     }
 
-    fun uploadImageProcess(pictureUri: Uri, userEmail: String, previousImagePath: String): MutableLiveData<Boolean> {
+    fun initiateDeactivationProcess(email: String): MutableLiveData<Boolean> {
+        updateDeactivationStatus = MutableLiveData<Boolean>()
+        deactivateAccount(email)
+        return updateDeactivationStatus
+    }
+
+    private fun deactivateAccount(email: String) {
+        val path = "Users/" + extactPathEmail(email)
+        val deactivateReference = FirebaseDatabase.getInstance().getReference(path)
+        deactivateReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    deactivateReference.child("accountStatus").setValue(false)
+                    deactivateReference.child("loginStatus").setValue(false)
+                    deactivateReference.child("activityStatus").setValue("Account Deactivated")
+                    updateUserList(email!!, false, false)
+                    updateDeactivationStatus.setValue(true)
+                } else {
+                    updateDeactivationStatus.setValue(false)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+
+    }
+
+    fun uploadImageProcess(
+        pictureUri: Uri,
+        userEmail: String,
+        previousImagePath: String
+    ): MutableLiveData<Boolean> {
         uploadImage = MutableLiveData<Boolean>()
         uploadImageToFirebase(pictureUri, userEmail, previousImagePath)
         return uploadImage
     }
+
     private fun uploadImageToFirebase(
         pictureUri: Uri,
         userEmail: String,
-        previousImagePath: String?
+        previousImagePath: String
     ) {
         val imageId: String =
             extactPathEmail(userEmail) + pictureUri.lastPathSegment
@@ -284,6 +362,85 @@ class Repository {
         }.addOnSuccessListener { taskSnapshot ->
             Log.d("TAG", "Image details: " + taskSnapshot.metadata)
             uploadImage.setValue(true)
+        }
+        // TODO to keep track which user has uploaded which image, in User node under the particular email address, profileImagePath is added so that database and storage data can tally each other
+        val uploadImagePathReference = FirebaseDatabase.getInstance().getReference(path)
+        uploadImagePathReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    uploadImagePathReference.child("profileImagePath").setValue(imageId)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun initiateLogout(userEmail: String): MutableLiveData<Boolean> {
+        updateStatus = MutableLiveData<Boolean>()
+        userLogout(userEmail)
+        return updateStatus
+    }
+
+    private fun userLogout(email: String) {
+        val path = "Users/" + email.replace("@", "_").replace(".", "_")
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                var user: User? = User()
+                if (dataSnapshot.exists()) {
+                    databaseReference.child("loginStatus").setValue(false)
+                    user = dataSnapshot.getValue(User::class.java)
+                    updateUserList(
+                        email,
+                        user!!.isAccountStatus,
+                        false
+                    )
+                    updateStatus.setValue(true)
+                } else {
+                    updateStatus.setValue(false)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    fun updateActivityStatus(email: String, status: Boolean) {
+        val text: String
+        text = if (status) {
+            "Online"
+        } else {
+            val simpleDateFormat = SimpleDateFormat("hh:mm a dd/MM/YYYY")
+            val dt = simpleDateFormat.format(Calendar.getInstance().time)
+            "Last seen at $dt"
+        }
+        val path = "Users/" + extactPathEmail(email)
+        val databaseReference = FirebaseDatabase.getInstance().getReference(path)
+        databaseReference.child("activityStatus").setValue(text)
+    }
+
+    fun uploadFirstImage(photoURI: Uri, userEmail: String): MutableLiveData<Boolean> {
+        noPreviousImgImageUploaded = MutableLiveData()
+        uploadFirstImageToFirebase(photoURI, userEmail)
+        return noPreviousImgImageUploaded
+    }
+
+    private fun uploadFirstImageToFirebase(photoURI: Uri, userEmail: String) {
+        val imageId: String =
+            extactPathEmail(userEmail) + photoURI.lastPathSegment
+        val path = "Users/" + extactPathEmail(userEmail)
+        Log.d("TAG", "ImageId and path: $imageId\t$path")
+        val storage = FirebaseStorage.getInstance()
+        val storageReference = storage.reference
+        val uploadImageReference = storageReference.child("images/" + photoURI.lastPathSegment)
+        val uploadTask = uploadImageReference.putFile(photoURI)
+        uploadTask.addOnFailureListener { e ->
+            Log.d("TAG", "Exception: $e")
+            noPreviousImgImageUploaded.value = false
+        }.addOnSuccessListener { taskSnapshot ->
+            Log.d("TAG", "Image details: " + taskSnapshot.metadata)
+            noPreviousImgImageUploaded.value = true
         }
         // TODO to keep track which user has uploaded which image, in User node under the particular email address, profileImagePath is added so that database and storage data can tally each other
         val uploadImagePathReference = FirebaseDatabase.getInstance().getReference(path)

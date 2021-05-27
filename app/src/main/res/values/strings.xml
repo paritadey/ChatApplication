@@ -51,13 +51,10 @@ Previously we used to write letters to our loved ones for anything small and eag
         3. User can un-friend or block other person if any problem occurs.\n
         4. Users will get notification on receiving friend request, message arrival.\n\n
         Special Note : This application does not ask for banking details or any kind of OTP. Please beware of sharing the confidential information with other people\n\n\n
-        Copyright (c) 2020.\n
-  Owner  : SPCollaboration\n
-  Email address : spcollaboration2@gmail.com\n
-  Developer\'s name : Parita Dey and Souvik Datta\n
-  Idea makers : SPCollaboration\n
-  This project is developed by the team of SPCollaboration.\n
-    </string>
+        Copyright (c) 2021.\n
+  Email address : paritadey@gmail.com\n
+  Developer\'s name : Parita Dey \n
+  Idea makers : Parita Dey (inspired by daily social chat application)</string>
     <string name="settings">Settings</string>
     <string name="block_accounts">Block Accounts</string>
     <string name="contact_us">Contact Us</string>

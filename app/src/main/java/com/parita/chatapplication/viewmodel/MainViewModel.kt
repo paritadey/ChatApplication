@@ -24,6 +24,10 @@ class MainViewModel : ViewModel() {
     private lateinit var isImageRemoved: MutableLiveData<Boolean>
     private lateinit var userMutableData: MutableLiveData<String>
     private lateinit var isImageUploaded: MutableLiveData<Boolean>
+    private lateinit var noPreviousImgImageUploaded: MutableLiveData<Boolean>
+    private lateinit var data: MutableLiveData<Boolean>
+    private lateinit var isAccountDeactivated: MutableLiveData<Boolean>
+    private lateinit var splashLoginStatus: MutableLiveData<Boolean>
 
 
     fun getLoginStatus(): LiveData<Boolean> {
@@ -171,23 +175,27 @@ class MainViewModel : ViewModel() {
     fun getUserData(): LiveData<User> {
         return userMutableLiveData
     }
+
     fun initiateDownloadImage(userEmail: String, imagePath: String) {
-        isImageDownloaded = MutableLiveData<ByteArray>()
+        isImageDownloaded = MutableLiveData()
         isImageDownloaded = Repository().getDownloadImage(userEmail, imagePath)
     }
+
     fun getDownloadedImage(): LiveData<ByteArray> {
         return isImageDownloaded
     }
 
     fun removeProfileImage(email: String, imagePath: String) {
-        isImageRemoved = MutableLiveData<Boolean>()
+        isImageRemoved = MutableLiveData()
         isImageRemoved = Repository().removeImageProcess(email, imagePath)
     }
+
     fun getCompleteUpdateRemoveImage(): LiveData<Boolean> {
         return isImageRemoved
     }
+
     fun getPreviousImage(userEmail: String) {
-        userMutableData = MutableLiveData<String>()
+        userMutableData = MutableLiveData()
         userMutableData = Repository().getUserPreviousImageDetails(userEmail)
     }
 
@@ -196,13 +204,48 @@ class MainViewModel : ViewModel() {
     }
 
     fun initiateImageUpload(pictureUri: Uri, userEmail: String, previousImagePath: String) {
-        isImageUploaded = MutableLiveData<Boolean>()
+        isImageUploaded = MutableLiveData()
         isImageUploaded = Repository()
             .uploadImageProcess(pictureUri, userEmail, previousImagePath)
     }
+
     fun getUpdateOnImageUpload(): LiveData<Boolean> {
         return isImageUploaded
     }
 
+    fun initiateDeactivation(userEmail: String) {
+        isAccountDeactivated = MutableLiveData()
+        isAccountDeactivated = Repository().initiateDeactivationProcess(userEmail)
+    }
 
+    fun getUpdateCompleteDeactivate(): LiveData<Boolean> {
+        return isAccountDeactivated
+    }
+
+    fun uploadImageInitiation(photoURI: Uri, email: String) {
+        noPreviousImgImageUploaded = MutableLiveData()
+        noPreviousImgImageUploaded = Repository().uploadFirstImage(photoURI, email)
+    }
+
+    fun getUpdateOnFirstImageUpload(): LiveData<Boolean> {
+        return noPreviousImgImageUploaded
+    }
+
+    fun initiateLogoutUser(userEmail: String) {
+        data = MutableLiveData()
+        data = Repository().initiateLogout(userEmail)
+    }
+
+    fun getUpdateCompleteLogout(): LiveData<Boolean> {
+        return data
+    }
+
+    fun getSplashLogin(email: String) {
+        splashLoginStatus = MutableLiveData()
+        splashLoginStatus = Repository().getLoginStatus(email)
+    }
+
+    fun getSplashLoginStatus(): LiveData<Boolean> {
+        return splashLoginStatus
+    }
 }

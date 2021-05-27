@@ -25,12 +25,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.mikhaellopez.circularimageview.CircularImageView
 import com.parita.chatapplication.R
 import com.parita.chatapplication.databinding.FragmentProfileBinding
+import com.parita.chatapplication.repository.Repository
 import com.parita.chatapplication.utils.SharedPreferenceHelper
+import com.parita.chatapplication.utils.SharedPreferenceHelper.clearValues
 import com.parita.chatapplication.utils.SharedPreferenceHelper.email
-import com.parita.chatapplication.view.MessageListActivity
+import com.parita.chatapplication.view.SplashScreen
 import com.parita.chatapplication.viewmodel.MainViewModel
 import java.io.*
 
@@ -62,16 +65,17 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (viewModel.isOnline(requireContext())) {
-            initView(view)
+            initView()
         } else {
-            MessageListActivity().createToast(
-                context,
-                "No internet connection, Please connect with the internet"
-            )
+            Snackbar.make(
+                binding.root,
+                "No internet connection, Please connect with the internet", Snackbar.LENGTH_LONG
+            ).show()
+
         }
     }
 
-    private fun initView(view: View) {
+    private fun initView() {
         defaultPrefs = SharedPreferenceHelper.defaultPreference(requireContext())
         viewModel.fetchUserDetails(requireContext())
         viewModel.getUserData().observe(viewLifecycleOwner, Observer { user ->
@@ -81,16 +85,34 @@ class ProfileFragment : Fragment() {
                 profileImagePath = user.profileImagePath
                 loadProfileImage()
             } else {
-                //progressBar.setVisibility(View.GONE)
+                binding.progressBar.setVisibility(View.GONE)
                 Log.d("TAG", "Please upload an image")
-                MessageListActivity().createToast(context, "Please upload an image")
+                Snackbar.make(binding.root, "Please upload an image", Snackbar.LENGTH_LONG).show()
             }
         })
         binding.backButton.setOnClickListener {
             findNavController().popBackStack()
         }
         binding.logout.setOnClickListener {
-
+            // TODO update the loginStatus in database
+            Repository().updateActivityStatus(defaultPrefs.email!!, false)
+            viewModel.initiateLogoutUser(defaultPrefs.email!!)
+            viewModel.getUpdateCompleteLogout().observe(viewLifecycleOwner,
+                Observer<Boolean> { aBoolean ->
+                    if (aBoolean) {
+                        defaultPrefs.clearValues
+                        val intent = Intent()
+                        intent.setClass(requireActivity(), SplashScreen::class.java)
+                        requireActivity().startActivity(intent)
+                        requireActivity().finish()
+                    } else {
+                        Snackbar.make(
+                            binding.root,
+                            "Unexpected error occured",
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                })
         }
         binding.settings.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_settingsFragment)
@@ -99,7 +121,25 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.action_profileFragment_to_aboutAppFragment)
         }
         binding.deactivate.setOnClickListener {
-
+            // TODO set accountStatus false and loginStatus false
+            // TODO set accountStatus false and loginStatus false
+            viewModel.initiateDeactivation(defaultPrefs.email!!)
+            viewModel.getUpdateCompleteDeactivate().observe(viewLifecycleOwner,
+                Observer<Boolean> { aBoolean ->
+                    if (aBoolean) {
+                        defaultPrefs.clearValues
+                        val intent = Intent()
+                        intent.setClass(requireActivity(), SplashScreen::class.java)
+                        requireActivity().startActivity(intent)
+                        requireActivity().finish()
+                    } else {
+                        Snackbar.make(
+                            binding.root,
+                            "Unexpected error occured",
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                })
         }
         binding.profilePicture.setOnClickListener {
             showImageChoiceDialog(binding.profilePicture)
@@ -171,16 +211,19 @@ class ProfileFragment : Fragment() {
                     Observer<Boolean> { aBoolean ->
                         if (aBoolean) {
                             binding.profilePicture.setImageDrawable(resources.getDrawable(R.drawable.ic_profile_picture))
-                            MessageListActivity().createToast(context, "Profile image removed")
+                            Snackbar.make(
+                                binding.root,
+                                "Profile image removed", Snackbar.LENGTH_LONG
+                            ).show()
                         } else {
-                            MessageListActivity().createToast(context, "Error occur")
+                            Snackbar.make(binding.root, "Error occur", Snackbar.LENGTH_LONG).show()
                         }
                     })
             } else {
-                MessageListActivity().createToast(
-                    context,
-                    "Error in finding the image. Please try after some time"
-                )
+                Snackbar.make(
+                    binding.root,
+                    "Error in finding the image. Please try after some time", Snackbar.LENGTH_LONG
+                ).show()
             }
             dialog.dismiss()
         })
@@ -193,7 +236,7 @@ class ProfileFragment : Fragment() {
 
     private fun loadProfileImage() {
         if (profileImagePath != null) {
-            //progressBar.setVisibility(View.VISIBLE)
+            binding.progressBar.setVisibility(View.VISIBLE)
             defaultPrefs.email?.let {
                 viewModel.initiateDownloadImage(
                     it,
@@ -204,11 +247,12 @@ class ProfileFragment : Fragment() {
                 Observer<ByteArray> { bytes ->
                     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                     binding.profilePicture.setImageBitmap(bitmap)
-                    //progressBar.setVisibility(View.GONE)
+                    binding.progressBar.setVisibility(View.GONE)
                 })
         } else {
-            //   progressBar.setVisibility(View.GONE)
+            binding.progressBar.setVisibility(View.GONE)
             Log.d("TAG", "Profile picture is not set")
+            Snackbar.make(binding.root, "Profile picture is not set", Snackbar.LENGTH_LONG).show()
         }
     }
 
@@ -226,7 +270,7 @@ class ProfileFragment : Fragment() {
             startActivityForResult(cropIntent, CROP_PIC)
         } catch (anfe: ActivityNotFoundException) {
             val toast = Toast.makeText(
-                context,
+                requireContext(),
                 "This device doesn't support the crop action!",
                 Toast.LENGTH_SHORT
             )
@@ -262,7 +306,8 @@ class ProfileFragment : Fragment() {
                     binding.profilePicture.setImageBitmap(bitmap)
                     uploadImageToFirebase()
                 } else {
-                    MessageListActivity().createToast(context, "Error in uploading image")
+                    Snackbar.make(binding.root, "Error in uploading image", Snackbar.LENGTH_LONG)
+                        .show()
                 }
             } else if (requestCode == CLICK_PIC) {
                 val extra = data!!.extras
@@ -311,7 +356,7 @@ class ProfileFragment : Fragment() {
     private fun uploadImageToFirebase() {
         Log.d("TAG", "Picture uri: $photoURI")
         if (photoURI != null) {
-            //  progressBar.setVisibility(View.VISIBLE)
+            binding.progressBar.setVisibility(View.VISIBLE)
             defaultPrefs.email?.let { viewModel.getPreviousImage(it) }
             viewModel.getCompletePreviousImage().observe(viewLifecycleOwner,
                 Observer<String?> { s ->
@@ -326,43 +371,46 @@ class ProfileFragment : Fragment() {
                         viewModel.getUpdateOnImageUpload().observe(viewLifecycleOwner,
                             Observer<Boolean> { aBoolean ->
                                 if (aBoolean) {
-                                    //progressBar.setVisibility(View.GONE)
+                                    binding.progressBar.setVisibility(View.GONE)
                                     Log.d("TAG", "User Profile picture is uploaded")
-                                    MessageListActivity().createToast(
-                                        context,
-                                        "Profile picture is uploaded successfully."
-                                    )
+                                    Snackbar.make(
+                                        binding.root,
+                                        "Profile picture is uploaded successfully.",
+                                        Snackbar.LENGTH_LONG
+                                    ).show()
                                 } else {
-                                    // progressBar.setVisibility(View.GONE)
+                                    binding.progressBar.setVisibility(View.GONE)
                                     Log.d("TAG", "Error")
-                                    MessageListActivity().createToast(context, "Please try again.")
+                                    Snackbar.make(
+                                        binding.root,
+                                        "Please try again.", Snackbar.LENGTH_LONG
+                                    ).show()
                                 }
                             })
                     } else {
                         Log.d("TAG", "NO PROFILE PICTURE PATH IS PRESENT")
-                        //progressBar.setVisibility(View.VISIBLE)
-                        defaultPrefs.email?.let {
-                            if (s != null) {
-                                viewModel.initiateImageUpload(
-                                    photoURI,
-                                    it,
-                                    s
-                                )
-                            }
-                        }
-                        viewModel.getUpdateOnImageUpload().observe(viewLifecycleOwner,
+                        binding.progressBar.setVisibility(View.VISIBLE)
+                        viewModel.uploadImageInitiation(photoURI, defaultPrefs.email!!)
+
+                        viewModel.getUpdateOnFirstImageUpload().observe(viewLifecycleOwner,
                             Observer<Boolean> { aBoolean ->
                                 if (aBoolean) {
-                                    // progressBar.setVisibility(View.GONE)
+                                    binding.progressBar.setVisibility(View.GONE)
                                     Log.d("TAG", "User Profile picture is uploaded")
-                                    MessageListActivity().createToast(
-                                        context,
-                                        "Profile picture is uploaded successfully."
-                                    )
+                                    Snackbar.make(
+                                        binding.root,
+                                        "Profile picture is uploaded successfully.",
+                                        Snackbar.LENGTH_LONG
+                                    ).show()
+
                                 } else {
-                                    // progressBar.setVisibility(View.GONE)
+                                    binding.progressBar.setVisibility(View.GONE)
                                     Log.d("TAG", "Error")
-                                    MessageListActivity().createToast(context, "Please try again.")
+                                    Snackbar.make(
+                                        binding.root,
+                                        "Please try again.",
+                                        Snackbar.LENGTH_LONG
+                                    ).show()
                                 }
                             })
                     }

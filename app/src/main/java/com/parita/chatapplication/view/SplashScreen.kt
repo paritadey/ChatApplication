@@ -1,28 +1,22 @@
 package com.parita.chatapplication.view
 
 import android.Manifest
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.View
-import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import com.google.android.material.snackbar.Snackbar
 import com.parita.chatapplication.R
 import com.parita.chatapplication.databinding.ActivitySplashScreenBinding
-import com.parita.chatapplication.repository.Repository
 import com.parita.chatapplication.utils.SharedPreferenceHelper
+import com.parita.chatapplication.utils.SharedPreferenceHelper.email
 import com.parita.chatapplication.viewmodel.MainViewModel
 
 class SplashScreen : AppCompatActivity() {
@@ -98,11 +92,25 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun moveToLogin() {
-        if (defaultPrefs.contains("email") && !defaultPrefs.getString("email", "no_data").equals("no_data")) {
-            Handler().postDelayed({
-                startActivity(Intent(this, MessageListActivity::class.java))
-                finish()
-            }, 4000)
+        if (defaultPrefs.contains("email") && !defaultPrefs.getString("email", "no_data")
+                .equals("no_data")
+        ) {
+            viewModel.getSplashLogin(defaultPrefs.email!!)
+            viewModel.getSplashLoginStatus().observe(this@SplashScreen,
+                { aBoolean ->
+                    if (aBoolean) {
+                        Handler().postDelayed({
+                            startActivity(Intent(this, MessageListActivity::class.java))
+                            finish()
+                        }, 4000)
+                    } else {
+                        Handler().postDelayed({
+                            startActivity(Intent(this, SignIn::class.java))
+                            finish()
+                        }, 4000)
+                    }
+                })
+
         } else {
             Handler().postDelayed({
                 startActivity(Intent(this, SignIn::class.java))

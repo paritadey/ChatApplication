@@ -9,6 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.parita.chatapplication.R
 import com.parita.chatapplication.databinding.FragmentMessageListBinding
 import com.parita.chatapplication.utils.SharedPreferenceHelper
@@ -38,10 +39,9 @@ class MessageListFragment : Fragment() {
         if (viewModel.isOnline(requireContext())) {
             //loadMessageList()
         } else {
-            MessageListActivity().createToast(
-                context,
-                "No internet connection. Please connect with the internet"
-            )
+            Snackbar.make(binding.root,
+                "No internet connection. Please connect with the internet", Snackbar.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -68,10 +68,10 @@ class MessageListFragment : Fragment() {
             if (viewModel.isOnline(requireContext())) {
                 // loadMessageList()
             } else {
-                MessageListActivity().createToast(
-                    context,
-                    "No internet connection. Please connect with the internet"
-                )
+                Snackbar.make(
+                    binding.root,
+                    "No internet connection. Please connect with the internet", Snackbar.LENGTH_LONG
+                ).show()
             }
         }
     }

@@ -52,6 +52,7 @@ object SharedPreferenceHelper {
         set(value) {
             editMe {
                 it.clear()
+                it.commit()
             }
         }
 }
